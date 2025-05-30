@@ -1,7 +1,11 @@
+# python -m uvicorn app.backend.main:app --reload
+
 from fastapi import FastAPI, UploadFile, File
-from pydantic import BaseModel
 from typing import List
 import io
+
+from app.backend.agents.manual_pipeline import run_pipeline
+from app.backend.agents.planner_executer import run_planner_executor
 
 app = FastAPI()
 
@@ -11,13 +15,9 @@ async def summarize(file: UploadFile = File(...)):
     decoded_text = transcript_text.decode("utf-8")
 
     # Dummy summary logic
-    summary = "Demo summary."
-    action_items = [
-        {"task": "Prepare Q3 budget", "assigned_to": "Alice"},
-        {"task": "Send meeting notes", "assigned_to": "Bob"},
-    ]
+    result = run_pipeline(decoded_text)
 
     return {
-        "summary": summary,
-        "action_items": action_items
+        "summary": result,
+        "actions": action_items
     }

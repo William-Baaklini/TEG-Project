@@ -27,7 +27,7 @@ if uploaded_file:
                 st.write(result["summary"])
 
                 st.subheader("✅ Action Items")
-                for item in result["action_items"]:
+                for item in result["actions"]:
                     st.markdown(f"- **{item['task']}** → {item['assigned_to']}")
             except requests.exceptions.RequestException as e:
                 st.error(f"Failed to get response from backend: {e}")
