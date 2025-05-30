@@ -54,3 +54,6 @@ logs/
 *.bak
 *.swp
 *.tmp
+
+# Chroma vector store
+**/chroma_store/
