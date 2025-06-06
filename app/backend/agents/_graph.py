@@ -39,13 +39,6 @@ graph_builder.set_entry_point("Transformer")
 graph_builder.add_edge("Summarizer", END)
 workflow = graph_builder.compile()
 
-# Get the raw PNG bytes
-png_bytes = workflow.get_graph().draw_mermaid_png(draw_method=MermaidDrawMethod.API)
-
-# Save to file
-with open("workflow.png", "wb") as f:
-    f.write(png_bytes)
-
 @traceable
 def run_graph(transcript_text: str) -> dict:
     logger.info("Starting Multi-Agent Workflow...")

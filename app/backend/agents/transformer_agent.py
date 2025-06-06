@@ -61,12 +61,8 @@ react_agent = create_react_agent(llm, tools, transformer_prompt)
 transformer_agent = AgentExecutor(
     agent=react_agent, 
     tools=tools, 
-    max_iterations=5,          # Max iterations before stopping
-    max_execution_time=60,     # Max time in seconds
-    early_stopping_method="generate",  # Stop when agent thinks it's done
-    handle_parsing_errors=True,        # Handle malformed outputs gracefully
-    return_intermediate_steps=True,    # Get step-by-step execution info
-    verbose=True) #Speaks trail of thoughts
+    handle_parsing_errors=True,
+    verbose=True) # Get step-by-step execution info
 
 def transformer_node(state):
     result = transformer_agent.invoke(state)
