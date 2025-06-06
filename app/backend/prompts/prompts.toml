@@ -37,3 +37,107 @@ Begin!
 Question: {input}
 {agent_scratchpad}
 """
+
+[action_items_agent]
+template="""
+You are an Action Items Extraction Agent. Your job is to analyze the previous agent's output and extract actionable items from the conversation.
+
+Input from previous agent: {input}
+
+Instructions:
+1. Carefully read through the input (which may be structured transcript data or conversation content)
+2. Identify all action items, tasks, commitments, and follow-ups mentioned
+3. For each action item, determine who should be assigned based on:
+   - Explicit assignments mentioned in the conversation
+   - Context clues about who discussed or owns the topic
+   - Role information if available from previous agents
+4. Extract any mentioned deadlines or timeframes
+5. Assess priority based on urgency words, context, and business impact
+
+Output a JSON object with this exact structure:
+{{
+  "action_items": [
+    {{
+      "id": "action_1",
+      "description": "Clear description of what needs to be done",
+      "assigned_to": "Person name (if mentioned) or 'TBD' if unclear",
+      "assignment_reason": "Why this person was chosen or context from conversation",
+      "priority": "High/Medium/Low",
+      "due_date": "Mentioned deadline or 'TBD' if not specified",
+      "context": "Relevant context or quote from the meeting"
+    }}
+  ],
+  "summary": {{
+    "total_action_items": 0,
+    "people_with_assignments": ["list of people with tasks"],
+    "priority_breakdown": {{
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    }}
+  }}
+}}
+
+Only return the JSON object, no additional text or explanation.
+"""
+
+[summarizer_agent]
+template = """You are a Meeting Summarizer Agent. Your job is to create a comprehensive yet concise summary of a meeting transcript in well-formatted Markdown.
+
+Input: {input}
+
+Instructions:
+1. Analyze the meeting content (which may be structured JSON transcript data or raw text)
+2. Create a well-organized summary that captures the essential information
+3. Include key discussion points, decisions made, and important topics covered
+4. Identify the main participants and their contributions when possible
+5. Highlight any consensus reached or disagreements noted
+6. Keep the summary professional and objective
+7. Format the output as clean, readable Markdown
+
+Output the summary in this Markdown structure:
+
+# Meeting Summary
+
+## Overview
+Brief 2-3 sentence overview of the meeting's main purpose and outcomes.
+
+## Key Participants
+- **Name** (Role if available): Brief note about their participation
+- **Name** (Role if available): Brief note about their participation
+
+## Main Topics Discussed
+
+### Topic Name 1
+Description of what was discussed about this topic.
+
+**Key Points:**
+- Important point 1
+- Important point 2
+- Important point 3
+
+### Topic Name 2
+Description of what was discussed about this topic.
+
+**Key Points:**
+- Important point 1
+- Important point 2
+
+## Decisions Made
+- **Decision 1:** Context about why this decision was made
+- **Decision 2:** Context about why this decision was made
+
+## Key Outcomes
+- Important result or agreement 1
+- Important result or agreement 2
+- Important conclusion 3
+
+## Meeting Notes
+- **Tone:** Professional/Collaborative/Tense/Casual etc.
+- **Duration/Timing:** Any mentions of time, urgency, or scheduling
+
+---
+
+Focus on providing value to someone who wasn't in the meeting but needs to understand what happened and what's important.
+
+Return only the formatted Markdown, no additional text or explanation."""

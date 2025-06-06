@@ -1,29 +1,34 @@
+import re
 import json
-import functools
 from pathlib import Path
 
 from langchain_core.tools import tool
-from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
-from langchain.agents import create_react_agent
+from langchain.agents import create_react_agent, AgentExecutor
+from langchain_core.messages import AIMessage
 
 from app.utils.name_extractor import extract_speaker_names
 from app.utils.toml_loader import load_toml_block
-from app.backend.agents.agents_factory import create_agent, create_node
-
-def agent_node(state, agent, name):
-    result = agent.invoke(state)
-    return {
-        'node': f"{name}",
-        'input': [AIMessage(content=result['output'])]
-    }
 
 PEOPLE_DB_PATH = Path("app/data/37signals_employees.json")
 
 def load_people_db():
     with open(PEOPLE_DB_PATH, "r") as f:
         return json.load(f)
+    
+def clean_json_output(output: str) -> str:
+    """
+    Clean the LLM output by removing markdown code blocks and extra whitespace.
+    """
+    # Remove ```json and ``` markers
+    cleaned = re.sub(r'```json\s*', '', output)
+    cleaned = re.sub(r'\s*```', '', cleaned)
+
+    # Strip leading/trailing whitespace
+    cleaned = cleaned.strip()
+
+    return cleaned
     
 @tool
 def get_used_roles(transcript: str) -> str:
@@ -53,11 +58,25 @@ transformer_prompt = PromptTemplate(
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 tools = [get_used_roles]
 react_agent = create_react_agent(llm, tools, transformer_prompt)
-#TODO old to delete
-# transformer_agent = AgentExecutor(agent=react_agent, tools=tools)
-# transformer_node = functools.partial(agent_node, agent=transformer_agent, name="Transformer")
+transformer_agent = AgentExecutor(
+    agent=react_agent, 
+    tools=tools, 
+    max_iterations=5,          # Max iterations before stopping
+    max_execution_time=60,     # Max time in seconds
+    early_stopping_method="generate",  # Stop when agent thinks it's done
+    handle_parsing_errors=True,        # Handle malformed outputs gracefully
+    return_intermediate_steps=True,    # Get step-by-step execution info
+    verbose=True) #Speaks trail of thoughts
 
-transformer_agent = create_agent(react_agent, tools=tools)
-transformer_node = create_node(transformer_agent, name="Transformer")
+def transformer_node(state):
+    result = transformer_agent.invoke(state)
 
-__all__ = ["transfromer_agent", "transformer_node"]
+    result = clean_json_output(result['output'])
+
+    return {
+        'node': "Transformer",
+        'transformed': result,
+        'input': [AIMessage(content=result)]
+    }
+
+__all__ = ["transformer_agent", "transformer_node"]
