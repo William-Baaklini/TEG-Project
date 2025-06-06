@@ -73,6 +73,38 @@ def transformer_node(state):
 
     result = clean_json_output(result['output'])
 
+    try:
+        # Attempt to parse the result as JSON
+        parsed_result = json.loads(result)
+        
+        # Extract roles from the transcript if it's a list of messages
+        if isinstance(parsed_result, list) and all(isinstance(item, dict) for item in parsed_result):
+            # Use a set to track unique name-role combinations
+            seen_combinations = set()
+            roles = []
+            
+            for item in parsed_result:
+                if 'name' in item and 'role' in item:
+                    # Create a tuple of name and role for uniqueness checking
+                    combination = (item['name'], item['role'])
+                    if combination not in seen_combinations:
+                        seen_combinations.add(combination)
+                        roles.append({
+                            'name': item['name'],
+                            'role': item['role']
+                        })
+            
+            # Add roles to the return dictionary
+            return {
+                'node': "Transformer",
+                'transformed': result,
+                'input': [AIMessage(content=result)],
+                'roles': roles
+            }
+    except json.JSONDecodeError:
+        # If JSON parsing fails, return the original result without roles
+        pass
+
     return {
         'node': "Transformer",
         'transformed': result,

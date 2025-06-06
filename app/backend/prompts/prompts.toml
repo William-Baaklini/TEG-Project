@@ -40,19 +40,39 @@ Question: {input}
 
 [action_items_agent]
 template="""
-You are an Action Items Extraction Agent. Your job is to analyze the previous agent's output and extract actionable items from the conversation.
+You are an Action Items Extraction Agent. Your job is to analyze transcript output and extract actionable items from the conversation. by sticking to certain context
 
-Input from previous agent: {input}
+RELEVANT CONTEXT FROM KNOWLEDGE BASE:
+{context}
 
-Instructions:
-1. Carefully read through the input (which may be structured transcript data or conversation content)
-2. Identify all action items, tasks, commitments, and follow-ups mentioned
-3. For each action item, determine who should be assigned based on:
+Transcript to be analyzed: 
+{input}
+
+INSTRUCTIONS:
+1. Carefully read through the input (structured transcript data or conversation content)
+2. Use the team roles and knowledge base context to:
+   - Understand each team member's responsibilities and expertise areas
+   - Make informed assignment decisions based on roles and past patterns
+   - Better assess priority based on team capacity and strategic importance
+   - Understand company processes and terminology mentioned
+3. Identify all action items, tasks, commitments, and follow-ups mentioned in the input
+4. For each action item, determine assignments using this priority order:
    - Explicit assignments mentioned in the conversation
+   - Role-based assignments using team member responsibilities
    - Context clues about who discussed or owns the topic
-   - Role information if available from previous agents
-4. Extract any mentioned deadlines or timeframes
-5. Assess priority based on urgency words, context, and business impact
+   - Historical patterns from knowledge base (if available)
+5. Extract any mentioned deadlines or timeframes
+6. Assess priority based on:
+   - Urgency indicators in the conversation
+   - Strategic importance based on team roles and context
+   - Dependencies and blocking relationships
+   - Business impact suggested by knowledge base context
+
+ASSIGNMENT STRATEGY:
+- When someone's role clearly matches the task (e.g., "database issue" → Database Admin)
+- When knowledge base shows historical ownership patterns
+- When conversation context suggests natural ownership
+- Use "TBD" only when truly unclear from all available information
 
 Output a JSON object with this exact structure:
 {{
@@ -78,7 +98,7 @@ Output a JSON object with this exact structure:
   }}
 }}
 
-Only return the JSON object, no additional text or explanation.
+IMPORTANT: Only return the JSON object, no additional text or explanation.
 """
 
 [summarizer_agent]

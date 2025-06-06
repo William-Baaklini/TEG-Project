@@ -8,6 +8,8 @@ from langsmith import traceable
 
 from app.utils.logger import logger
 
+from app.backend.rag.retriever_wrapper import init_retriever
+
 from app.backend.agents.transformer_agent import transformer_node
 from app.backend.agents.action_items_agent import action_items_node
 from app.backend.agents.summarizer_agent import summarizer_node
@@ -16,6 +18,7 @@ from app.backend.agents.summarizer_agent import summarizer_node
 # Define the state
 class AgentState(TypedDict):
     node: str
+    roles: Optional[dict]
     original_input: Optional[str]
     transformed: Optional[str]
     actions: Optional[str]
@@ -87,3 +90,5 @@ def run_graph(transcript_text: str) -> dict:
         
     logger.info("Workflow completed successfully.")
     return final_state
+
+__all__ = ["run_graph"]
